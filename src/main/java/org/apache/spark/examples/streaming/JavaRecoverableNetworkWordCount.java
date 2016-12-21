@@ -47,19 +47,19 @@ import org.apache.spark.util.LongAccumulator;
  */
 class JavaWordBlacklist {
 
-  private static volatile Broadcast<List<String>> instance = null;
+	private static volatile Broadcast<List<String>> instance = null;
 
-  public static Broadcast<List<String>> getInstance(JavaSparkContext jsc) {
-    if (instance == null) {
-      synchronized (JavaWordBlacklist.class) {
-        if (instance == null) {
-          List<String> wordBlacklist = Arrays.asList("a", "b", "c");
-          instance = jsc.broadcast(wordBlacklist);
-        }
-      }
-    }
-    return instance;
-  }
+	public static Broadcast<List<String>> getInstance(JavaSparkContext jsc) {
+		if (instance == null) {
+			synchronized (JavaWordBlacklist.class) {
+				if (instance == null) {
+					List<String> wordBlacklist = Arrays.asList("a", "b", "c");
+					instance = jsc.broadcast(wordBlacklist);
+				}
+			}
+		}
+		return instance;
+	}
 }
 
 /**
@@ -67,154 +67,156 @@ class JavaWordBlacklist {
  */
 class JavaDroppedWordsCounter {
 
-  private static volatile LongAccumulator instance = null;
+	private static volatile LongAccumulator instance = null;
 
-  public static LongAccumulator getInstance(JavaSparkContext jsc) {
-    if (instance == null) {
-      synchronized (JavaDroppedWordsCounter.class) {
-        if (instance == null) {
-          instance = jsc.sc().longAccumulator("WordsInBlacklistCounter");
-        }
-      }
-    }
-    return instance;
-  }
+	public static LongAccumulator getInstance(JavaSparkContext jsc) {
+		if (instance == null) {
+			synchronized (JavaDroppedWordsCounter.class) {
+				if (instance == null) {
+					instance = jsc.sc().longAccumulator("WordsInBlacklistCounter");
+				}
+			}
+		}
+		return instance;
+	}
 }
 
 /**
- * Counts words in text encoded with UTF8 received from the network every second. This example also
- * shows how to use lazily instantiated singleton instances for Accumulator and Broadcast so that
- * they can be registered on driver failures.
+ * Counts words in text encoded with UTF8 received from the network every
+ * second. This example also shows how to use lazily instantiated singleton
+ * instances for Accumulator and Broadcast so that they can be registered on
+ * driver failures.
  *
- * Usage: JavaRecoverableNetworkWordCount <hostname> <port> <checkpoint-directory> <output-file>
- *   <hostname> and <port> describe the TCP server that Spark Streaming would connect to receive
- *   data. <checkpoint-directory> directory to HDFS-compatible file system which checkpoint data
- *   <output-file> file to which the word counts will be appended
+ * Usage: JavaRecoverableNetworkWordCount <hostname> <port>
+ * <checkpoint-directory> <output-file> <hostname> and <port> describe the TCP
+ * server that Spark Streaming would connect to receive data.
+ * <checkpoint-directory> directory to HDFS-compatible file system which
+ * checkpoint data <output-file> file to which the word counts will be appended
  *
  * <checkpoint-directory> and <output-file> must be absolute paths
  *
  * To run this on your local machine, you need to first run a Netcat server
  *
- *      `$ nc -lk 9999`
+ * `$ nc -lk 9999`
  *
  * and run the example as
  *
- *      `$ ./bin/run-example org.apache.spark.examples.streaming.JavaRecoverableNetworkWordCount \
- *              localhost 9999 ~/checkpoint/ ~/out`
+ * `$ ./bin/run-example
+ * org.apache.spark.examples.streaming.JavaRecoverableNetworkWordCount \
+ * localhost 9999 ~/checkpoint/ ~/out`
  *
- * If the directory ~/checkpoint/ does not exist (e.g. running for the first time), it will create
- * a new StreamingContext (will print "Creating new context" to the console). Otherwise, if
- * checkpoint data exists in ~/checkpoint/, then it will create StreamingContext from
- * the checkpoint data.
+ * If the directory ~/checkpoint/ does not exist (e.g. running for the first
+ * time), it will create a new StreamingContext (will print "Creating new
+ * context" to the console). Otherwise, if checkpoint data exists in
+ * ~/checkpoint/, then it will create StreamingContext from the checkpoint data.
  *
  * Refer to the online documentation for more details.
  */
 public final class JavaRecoverableNetworkWordCount {
-  private static final Pattern SPACE = Pattern.compile(" ");
 
-  private static JavaStreamingContext createContext(String ip,
-                                                    int port,
-                                                    String checkpointDirectory,
-                                                    String outputPath) {
+	private static final Pattern SPACE = Pattern.compile(" ");
 
-    // If you do not see this printed, that means the StreamingContext has been loaded
-    // from the new checkpoint
-    System.out.println("Creating new context");
-    final File outputFile = new File(outputPath);
-    if (outputFile.exists()) {
-      outputFile.delete();
-    }
-    SparkConf sparkConf = new SparkConf().setAppName("JavaRecoverableNetworkWordCount");
-    // Create the context with a 1 second batch size
-    JavaStreamingContext ssc = new JavaStreamingContext(sparkConf, Durations.seconds(1));
-    ssc.checkpoint(checkpointDirectory);
+	private static JavaStreamingContext createContext(String ip, int port, String checkpointDirectory, String outputPath) {
 
-    // Create a socket stream on target ip:port and count the
-    // words in input stream of \n delimited text (eg. generated by 'nc')
-    JavaReceiverInputDStream<String> lines = ssc.socketTextStream(ip, port);
-    JavaDStream<String> words = lines.flatMap(new FlatMapFunction<String, String>() {
-      @Override
-      public Iterator<String> call(String x) {
-        return Arrays.asList(SPACE.split(x)).iterator();
-      }
-    });
-    JavaPairDStream<String, Integer> wordCounts = words.mapToPair(
-      new PairFunction<String, String, Integer>() {
-        @Override
-        public Tuple2<String, Integer> call(String s) {
-          return new Tuple2<>(s, 1);
-        }
-      }).reduceByKey(new Function2<Integer, Integer, Integer>() {
-        @Override
-        public Integer call(Integer i1, Integer i2) {
-          return i1 + i2;
-        }
-      });
+		// If you do not see this printed, that means the StreamingContext has
+		// been loaded
+		// from the new checkpoint
+		System.out.println("Creating new context");
+		final File outputFile = new File(outputPath);
+		if (outputFile.exists()) {
+			outputFile.delete();
+		}
+		SparkConf sparkConf = new SparkConf().setAppName("JavaRecoverableNetworkWordCount");
+		// Create the context with a 1 second batch size
+		JavaStreamingContext ssc = new JavaStreamingContext(sparkConf, Durations.seconds(1));
+		ssc.checkpoint(checkpointDirectory);
 
-    wordCounts.foreachRDD(new VoidFunction2<JavaPairRDD<String, Integer>, Time>() {
-      @Override
-      public void call(JavaPairRDD<String, Integer> rdd, Time time) throws IOException {
-        // Get or register the blacklist Broadcast
-        final Broadcast<List<String>> blacklist =
-            JavaWordBlacklist.getInstance(new JavaSparkContext(rdd.context()));
-        // Get or register the droppedWordsCounter Accumulator
-        final LongAccumulator droppedWordsCounter =
-            JavaDroppedWordsCounter.getInstance(new JavaSparkContext(rdd.context()));
-        // Use blacklist to drop words and use droppedWordsCounter to count them
-        String counts = rdd.filter(new Function<Tuple2<String, Integer>, Boolean>() {
-          @Override
-          public Boolean call(Tuple2<String, Integer> wordCount) {
-            if (blacklist.value().contains(wordCount._1())) {
-              droppedWordsCounter.add(wordCount._2());
-              return false;
-            } else {
-              return true;
-            }
-          }
-        }).collect().toString();
-        String output = "Counts at time " + time + " " + counts;
-        System.out.println(output);
-        System.out.println("Dropped " + droppedWordsCounter.value() + " word(s) totally");
-        System.out.println("Appending to " + outputFile.getAbsolutePath());
-        Files.append(output + "\n", outputFile, Charset.defaultCharset());
-      }
-    });
+		// Create a socket stream on target ip:port and count the
+		// words in input stream of \n delimited text (eg. generated by 'nc')
+		JavaReceiverInputDStream<String> lines = ssc.socketTextStream(ip, port);
+		JavaDStream<String> words = lines.flatMap(new FlatMapFunction<String, String>() {
 
-    return ssc;
-  }
+			@Override
+			public Iterator<String> call(String x) {
+				return Arrays.asList(SPACE.split(x)).iterator();
+			}
+		});
+		JavaPairDStream<String, Integer> wordCounts = words.mapToPair(new PairFunction<String, String, Integer>() {
 
-  public static void main(String[] args) throws Exception {
-    if (args.length != 4) {
-      System.err.println("You arguments were " + Arrays.asList(args));
-      System.err.println(
-          "Usage: JavaRecoverableNetworkWordCount <hostname> <port> <checkpoint-directory>\n" +
-          "     <output-file>. <hostname> and <port> describe the TCP server that Spark\n" +
-          "     Streaming would connect to receive data. <checkpoint-directory> directory to\n" +
-          "     HDFS-compatible file system which checkpoint data <output-file> file to which\n" +
-          "     the word counts will be appended\n" +
-          "\n" +
-          "In local mode, <master> should be 'local[n]' with n > 1\n" +
-          "Both <checkpoint-directory> and <output-file> must be absolute paths");
-      System.exit(1);
-    }
+			@Override
+			public Tuple2<String, Integer> call(String s) {
+				return new Tuple2<>(s, 1);
+			}
+		}).reduceByKey(new Function2<Integer, Integer, Integer>() {
 
-    final String ip = args[0];
-    final int port = Integer.parseInt(args[1]);
-    final String checkpointDirectory = args[2];
-    final String outputPath = args[3];
+			@Override
+			public Integer call(Integer i1, Integer i2) {
+				return i1 + i2;
+			}
+		});
 
-    // Function to create JavaStreamingContext without any output operations
-    // (used to detect the new context)
-    Function0<JavaStreamingContext> createContextFunc = new Function0<JavaStreamingContext>() {
-      @Override
-      public JavaStreamingContext call() {
-        return createContext(ip, port, checkpointDirectory, outputPath);
-      }
-    };
+		wordCounts.foreachRDD(new VoidFunction2<JavaPairRDD<String, Integer>, Time>() {
 
-    JavaStreamingContext ssc =
-      JavaStreamingContext.getOrCreate(checkpointDirectory, createContextFunc);
-    ssc.start();
-    ssc.awaitTermination();
-  }
+			@Override
+			public void call(JavaPairRDD<String, Integer> rdd, Time time) throws IOException {
+				// Get or register the blacklist Broadcast
+				final Broadcast<List<String>> blacklist = JavaWordBlacklist.getInstance(new JavaSparkContext(rdd.context()));
+				// Get or register the droppedWordsCounter Accumulator
+				final LongAccumulator droppedWordsCounter = JavaDroppedWordsCounter.getInstance(new JavaSparkContext(rdd.context()));
+				// Use blacklist to drop words and use droppedWordsCounter to
+				// count them
+				String counts = rdd.filter(new Function<Tuple2<String, Integer>, Boolean>() {
+
+					@Override
+					public Boolean call(Tuple2<String, Integer> wordCount) {
+						if (blacklist.value().contains(wordCount._1())) {
+							droppedWordsCounter.add(wordCount._2());
+							return false;
+						} else {
+							return true;
+						}
+					}
+				}).collect().toString();
+				String output = "Counts at time " + time + " " + counts;
+				System.out.println(output);
+				System.out.println("Dropped " + droppedWordsCounter.value() + " word(s) totally");
+				System.out.println("Appending to " + outputFile.getAbsolutePath());
+				Files.append(output + "\n", outputFile, Charset.defaultCharset());
+			}
+		});
+
+		return ssc;
+	}
+
+	public static void main(String[] args) throws Exception {
+		if (args.length != 4) {
+			System.err.println("You arguments were " + Arrays.asList(args));
+			System.err.println("Usage: JavaRecoverableNetworkWordCount <hostname> <port> <checkpoint-directory>\n"
+					+ "     <output-file>. <hostname> and <port> describe the TCP server that Spark\n"
+					+ "     Streaming would connect to receive data. <checkpoint-directory> directory to\n"
+					+ "     HDFS-compatible file system which checkpoint data <output-file> file to which\n"
+					+ "     the word counts will be appended\n" + "\n" + "In local mode, <master> should be 'local[n]' with n > 1\n"
+					+ "Both <checkpoint-directory> and <output-file> must be absolute paths");
+			System.exit(1);
+		}
+
+		final String ip = args[0];
+		final int port = Integer.parseInt(args[1]);
+		final String checkpointDirectory = args[2];
+		final String outputPath = args[3];
+
+		// Function to create JavaStreamingContext without any output operations
+		// (used to detect the new context)
+		Function0<JavaStreamingContext> createContextFunc = new Function0<JavaStreamingContext>() {
+
+			@Override
+			public JavaStreamingContext call() {
+				return createContext(ip, port, checkpointDirectory, outputPath);
+			}
+		};
+
+		JavaStreamingContext ssc = JavaStreamingContext.getOrCreate(checkpointDirectory, createContextFunc);
+		ssc.start();
+		ssc.awaitTermination();
+	}
 }

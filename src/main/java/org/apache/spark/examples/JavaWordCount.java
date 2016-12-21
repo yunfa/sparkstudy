@@ -32,49 +32,48 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 public final class JavaWordCount {
-  private static final Pattern SPACE = Pattern.compile(" ");
 
-  public static void main(String[] args) throws Exception {
+	private static final Pattern SPACE = Pattern.compile(" ");
 
-    if (args.length < 1) {
-      System.err.println("Usage: JavaWordCount <file>");
-      System.exit(1);
-    }
+	public static void main(String[] args) throws Exception {
 
-    SparkSession spark = SparkSession
-      .builder()
-      .appName("JavaWordCount")
-      .getOrCreate();
+		if (args.length < 1) {
+			System.err.println("Usage: JavaWordCount <file>");
+			System.exit(1);
+		}
 
-    JavaRDD<String> lines = spark.read().textFile(args[0]).javaRDD();
+		SparkSession spark = SparkSession.builder().appName("JavaWordCount").getOrCreate();
 
-    JavaRDD<String> words = lines.flatMap(new FlatMapFunction<String, String>() {
-      @Override
-      public Iterator<String> call(String s) {
-        return Arrays.asList(SPACE.split(s)).iterator();
-      }
-    });
+		JavaRDD<String> lines = spark.read().textFile(args[0]).javaRDD();
 
-    JavaPairRDD<String, Integer> ones = words.mapToPair(
-      new PairFunction<String, String, Integer>() {
-        @Override
-        public Tuple2<String, Integer> call(String s) {
-          return new Tuple2<>(s, 1);
-        }
-      });
+		JavaRDD<String> words = lines.flatMap(new FlatMapFunction<String, String>() {
 
-    JavaPairRDD<String, Integer> counts = ones.reduceByKey(
-      new Function2<Integer, Integer, Integer>() {
-        @Override
-        public Integer call(Integer i1, Integer i2) {
-          return i1 + i2;
-        }
-      });
+			@Override
+			public Iterator<String> call(String s) {
+				return Arrays.asList(SPACE.split(s)).iterator();
+			}
+		});
 
-    List<Tuple2<String, Integer>> output = counts.collect();
-    for (Tuple2<?,?> tuple : output) {
-      System.out.println(tuple._1() + ": " + tuple._2());
-    }
-    spark.stop();
-  }
+		JavaPairRDD<String, Integer> ones = words.mapToPair(new PairFunction<String, String, Integer>() {
+
+			@Override
+			public Tuple2<String, Integer> call(String s) {
+				return new Tuple2<>(s, 1);
+			}
+		});
+
+		JavaPairRDD<String, Integer> counts = ones.reduceByKey(new Function2<Integer, Integer, Integer>() {
+
+			@Override
+			public Integer call(Integer i1, Integer i2) {
+				return i1 + i2;
+			}
+		});
+
+		List<Tuple2<String, Integer>> output = counts.collect();
+		for (Tuple2<?, ?> tuple : output) {
+			System.out.println(tuple._1() + ": " + tuple._2());
+		}
+		spark.stop();
+	}
 }

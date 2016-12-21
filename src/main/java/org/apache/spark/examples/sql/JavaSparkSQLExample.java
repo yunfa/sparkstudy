@@ -104,7 +104,6 @@ public class JavaSparkSQLExample {
 	}
 
 	private static void runBasicDataFrameExample(SparkSession spark) {
-		// $example on:create_df$
 		Dataset<Row> df = spark.read().json("src/main/resources/people.json");
 
 		// Displays the content of the DataFrame to stdout
@@ -153,6 +152,7 @@ public class JavaSparkSQLExample {
 		// | 30|Andy|
 		// +---+----+
 
+		System.out.println("group by age.count");
 		// Count people by age
 		df.groupBy("age").count().show();
 		// +----+-----+
@@ -168,7 +168,8 @@ public class JavaSparkSQLExample {
 		// Register the DataFrame as a SQL temporary view
 		df.createOrReplaceTempView("people");
 
-		Dataset<Row> sqlDF = spark.sql("SELECT * FROM people");
+		System.out.println("sql: select * from people where age > 19");
+		Dataset<Row> sqlDF = spark.sql("SELECT * FROM people where age >19");
 		sqlDF.show();
 		// +----+-------+
 		// | age| name|

@@ -28,17 +28,25 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Counts words in UTF8 encoded, '\n' delimited text received from the network over a sliding window of configurable duration. Each line from the
- * network is tagged with a timestamp that is used to determine the windows into which it falls.
+ * Counts words in UTF8 encoded, '\n' delimited text received from the network
+ * over a sliding window of configurable duration. Each line from the network is
+ * tagged with a timestamp that is used to determine the windows into which it
+ * falls.
  *
- * Usage: JavaStructuredNetworkWordCountWindowed <hostname> <port> <window duration> [<slide duration>] <hostname> and <port> describe the TCP server
- * that Structured Streaming would connect to receive data. <window duration> gives the size of window, specified as integer number of seconds <slide
- * duration> gives the amount of time successive windows are offset from one another, given in the same units as above. <slide duration> should be
- * less than or equal to <window duration>. If the two are equal, successive windows have no overlap. If <slide duration> is not provided, it defaults
- * to <window duration>.
+ * Usage: JavaStructuredNetworkWordCountWindowed <hostname> <port> <window
+ * duration> [<slide duration>] <hostname> and <port> describe the TCP server
+ * that Structured Streaming would connect to receive data. <window duration>
+ * gives the size of window, specified as integer number of seconds <slide
+ * duration> gives the amount of time successive windows are offset from one
+ * another, given in the same units as above. <slide duration> should be less
+ * than or equal to <window duration>. If the two are equal, successive windows
+ * have no overlap. If <slide duration> is not provided, it defaults to <window
+ * duration>.
  *
- * To run this on your local machine, you need to first run a Netcat server `$ nc -lk 9999` and then run the example `$ bin/run-example
- * sql.streaming.JavaStructuredNetworkWordCountWindowed localhost 9999 <window duration in seconds> [<slide duration in seconds>]`
+ * To run this on your local machine, you need to first run a Netcat server `$
+ * nc -lk 9999` and then run the example `$ bin/run-example
+ * sql.streaming.JavaStructuredNetworkWordCountWindowed localhost 9999 <window
+ * duration in seconds> [<slide duration in seconds>]`
  *
  * One recommended <window duration>, <slide duration> pair is 10, 5
  */
@@ -63,10 +71,10 @@ public final class JavaStructuredNetworkWordCountWindowed {
 
 		SparkSession spark = SparkSession.builder().appName("JavaStructuredNetworkWordCountWindowed").getOrCreate();
 
-		// Create DataFrame representing the stream of input lines from connection to host:port
-		Dataset<Tuple2<String, Timestamp>> lines = spark.readStream().format("socket").option("host", host)
-				.option("port", port).option("includeTimestamp", true).load()
-				.as(Encoders.tuple(Encoders.STRING(), Encoders.TIMESTAMP()));
+		// Create DataFrame representing the stream of input lines from
+		// connection to host:port
+		Dataset<Tuple2<String, Timestamp>> lines = spark.readStream().format("socket").option("host", host).option("port", port)
+				.option("includeTimestamp", true).load().as(Encoders.tuple(Encoders.STRING(), Encoders.TIMESTAMP()));
 
 		// Split the lines into words, retaining timestamps
 		Dataset<Row> words = lines.flatMap(new FlatMapFunction<Tuple2<String, Timestamp>, Tuple2<String, Timestamp>>() {
@@ -82,13 +90,12 @@ public final class JavaStructuredNetworkWordCountWindowed {
 		}, Encoders.tuple(Encoders.STRING(), Encoders.TIMESTAMP())).toDF("word", "timestamp");
 
 		// Group the data by window and word and compute the count of each group
-		Dataset<Row> windowedCounts = words
-				.groupBy(functions.window(words.col("timestamp"), windowDuration, slideDuration), words.col("word"))
+		Dataset<Row> windowedCounts = words.groupBy(functions.window(words.col("timestamp"), windowDuration, slideDuration), words.col("word"))
 				.count().orderBy("window");
 
-		// Start running the query that prints the windowed word counts to the console
-		StreamingQuery query = windowedCounts.writeStream().outputMode("complete").format("console")
-				.option("truncate", "false").start();
+		// Start running the query that prints the windowed word counts to the
+		// console
+		StreamingQuery query = windowedCounts.writeStream().outputMode("complete").format("console").option("truncate", "false").start();
 
 		query.awaitTermination();
 	}

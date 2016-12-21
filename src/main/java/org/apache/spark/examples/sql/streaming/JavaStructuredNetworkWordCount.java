@@ -26,10 +26,12 @@ import java.util.Iterator;
 /**
  * Counts words in UTF8 encoded, '\n' delimited text received from the network.
  *
- * Usage: JavaStructuredNetworkWordCount <hostname> <port> <hostname> and <port> describe the TCP server that Structured Streaming would connect to
- * receive data.
+ * Usage: JavaStructuredNetworkWordCount <hostname> <port> <hostname> and <port>
+ * describe the TCP server that Structured Streaming would connect to receive
+ * data.
  *
- * To run this on your local machine, you need to first run a Netcat server `$ nc -lk 9999` and then run the example `$ bin/run-example
+ * To run this on your local machine, you need to first run a Netcat server `$
+ * nc -lk 9999` and then run the example `$ bin/run-example
  * sql.streaming.JavaStructuredNetworkWordCount localhost 9999`
  */
 public final class JavaStructuredNetworkWordCount {
@@ -45,9 +47,9 @@ public final class JavaStructuredNetworkWordCount {
 
 		SparkSession spark = SparkSession.builder().appName("JavaStructuredNetworkWordCount").getOrCreate();
 
-		// Create DataFrame representing the stream of input lines from connection to host:port
-		Dataset<String> lines = spark.readStream().format("socket").option("host", host).option("port", port).load()
-				.as(Encoders.STRING());
+		// Create DataFrame representing the stream of input lines from
+		// connection to host:port
+		Dataset<String> lines = spark.readStream().format("socket").option("host", host).option("port", port).load().as(Encoders.STRING());
 
 		// Split the lines into words
 		Dataset<String> words = lines.flatMap(new FlatMapFunction<String, String>() {
