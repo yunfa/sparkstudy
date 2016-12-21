@@ -7,124 +7,133 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * This class represents an Apache access log line.
- * See http://httpd.apache.org/docs/2.2/logs.html for more details.
+ * This class represents an Apache access log line. See
+ * http://httpd.apache.org/docs/2.2/logs.html for more details.
  */
 public class ApacheAccessLog implements Serializable {
-  private static final Logger logger = Logger.getLogger("Access");
 
-  private String ipAddress;
-  private String clientIdentd;
-  private String userID;
-  private String dateTimeString;
-  private String method;
-  private String endpoint;
-  private String protocol;
-  private int responseCode;
-  private long contentSize;
+	private static final Logger logger = Logger.getLogger("Access");
 
-  private ApacheAccessLog(String ipAddress, String clientIdentd, String userID,
-                          String dateTime, String method, String endpoint,
-                          String protocol, String responseCode,
-                          String contentSize) {
-    this.ipAddress = ipAddress;
-    this.clientIdentd = clientIdentd;
-    this.userID = userID;
-    this.dateTimeString = dateTime;  // TODO: Parse from dateTime String;
-    this.method = method;
-    this.endpoint = endpoint;
-    this.protocol = protocol;
-    this.responseCode = Integer.parseInt(responseCode);
-    this.contentSize = Long.parseLong(contentSize);
-  }
+	private String ipAddress;
 
-  public String getIpAddress() {
-    return ipAddress;
-  }
+	private String clientIdentd;
 
-  public String getClientIdentd() {
-    return clientIdentd;
-  }
+	private String userID;
 
-  public String getUserID() {
-    return userID;
-  }
+	private String dateTimeString;
 
-  public String getDateTimeString() {
-    return dateTimeString;
-  }
+	private String method;
 
-  public String getMethod() {
-    return method;
-  }
+	private String endpoint;
 
-  public String getEndpoint() {
-    return endpoint;
-  }
+	private String protocol;
 
-  public String getProtocol() {
-    return protocol;
-  }
+	private int responseCode;
 
-  public int getResponseCode() {
-    return responseCode;
-  }
+	private long contentSize;
 
-  public long getContentSize() {
-    return contentSize;
-  }
+	private ApacheAccessLog(String ipAddress, String clientIdentd, String userID, String dateTime, String method, String endpoint, String protocol,
+			String responseCode, String contentSize) {
+		this.ipAddress = ipAddress;
+		this.clientIdentd = clientIdentd;
+		this.userID = userID;
+		this.dateTimeString = dateTime; // TODO: Parse from dateTime String;
+		this.method = method;
+		this.endpoint = endpoint;
+		this.protocol = protocol;
+		this.responseCode = Integer.parseInt(responseCode);
+		this.contentSize = Long.parseLong(contentSize);
+	}
 
-  public void setIpAddress(String ipAddress) {
-    this.ipAddress = ipAddress;
-  }
+	public String getIpAddress() {
+		return ipAddress;
+	}
 
-  public void setClientIdentd(String clientIdentd) {
-    this.clientIdentd = clientIdentd;
-  }
+	public String getClientIdentd() {
+		return clientIdentd;
+	}
 
-  public void setUserID(String userID) {
-    this.userID = userID;
-  }
+	public String getUserID() {
+		return userID;
+	}
 
-  public void setDateTimeString(String dateTimeString) {
-    this.dateTimeString = dateTimeString;
-  }
+	public String getDateTimeString() {
+		return dateTimeString;
+	}
 
-  public void setMethod(String method) {
-    this.method = method;
-  }
+	public String getMethod() {
+		return method;
+	}
 
-  public void setEndpoint(String endpoint) {
-    this.endpoint = endpoint;
-  }
+	public String getEndpoint() {
+		return endpoint;
+	}
 
-  public void setProtocol(String protocol) {
-    this.protocol = protocol;
-  }
+	public String getProtocol() {
+		return protocol;
+	}
 
-  public void setResponseCode(int responseCode) {
-    this.responseCode = responseCode;
-  }
+	public int getResponseCode() {
+		return responseCode;
+	}
 
-  public void setContentSize(long contentSize) {
-    this.contentSize = contentSize;
-  }
+	public long getContentSize() {
+		return contentSize;
+	}
 
-  // Example Apache log line:
-  //   127.0.0.1 - - [21/Jul/2014:9:55:27 -0800] "GET /home.html HTTP/1.1" 200 2048
-  private static final String LOG_ENTRY_PATTERN =
-      // 1:IP  2:client 3:user 4:date time                   5:method 6:req 7:proto   8:respcode 9:size
-      "^(\\S+) (\\S+) (\\S+) \\[([\\w:/]+\\s[+\\-]\\d{4})\\] \"(\\S+) (\\S+) (\\S+)\" (\\d{3}) (\\d+)";
-  private static final Pattern PATTERN = Pattern.compile(LOG_ENTRY_PATTERN);
+	public void setIpAddress(String ipAddress) {
+		this.ipAddress = ipAddress;
+	}
 
-  public static ApacheAccessLog parseFromLogLine(String logline) {
-    Matcher m = PATTERN.matcher(logline);
-    if (!m.find()) {
-      logger.log(Level.ALL, "Cannot parse logline" + logline);
-      throw new RuntimeException("Error parsing logline");
-    }
+	public void setClientIdentd(String clientIdentd) {
+		this.clientIdentd = clientIdentd;
+	}
 
-    return new ApacheAccessLog(m.group(1), m.group(2), m.group(3), m.group(4),
-        m.group(5), m.group(6), m.group(7), m.group(8), m.group(9));
-  }
+	public void setUserID(String userID) {
+		this.userID = userID;
+	}
+
+	public void setDateTimeString(String dateTimeString) {
+		this.dateTimeString = dateTimeString;
+	}
+
+	public void setMethod(String method) {
+		this.method = method;
+	}
+
+	public void setEndpoint(String endpoint) {
+		this.endpoint = endpoint;
+	}
+
+	public void setProtocol(String protocol) {
+		this.protocol = protocol;
+	}
+
+	public void setResponseCode(int responseCode) {
+		this.responseCode = responseCode;
+	}
+
+	public void setContentSize(long contentSize) {
+		this.contentSize = contentSize;
+	}
+
+	// Example Apache log line:
+	// 127.0.0.1 - - [21/Jul/2014:9:55:27 -0800] "GET /home.html HTTP/1.1" 200
+	// 2048
+	private static final String LOG_ENTRY_PATTERN =
+			// 1:IP 2:client 3:user 4:date time 5:method 6:req 7:proto
+			// 8:respcode 9:size
+			"^(\\S+) (\\S+) (\\S+) \\[([\\w:/]+\\s[+\\-]\\d{4})\\] \"(\\S+) (\\S+) (\\S+)\" (\\d{3}) (\\d+)";
+
+	private static final Pattern PATTERN = Pattern.compile(LOG_ENTRY_PATTERN);
+
+	public static ApacheAccessLog parseFromLogLine(String logline) {
+		Matcher m = PATTERN.matcher(logline);
+		if (!m.find()) {
+			logger.log(Level.ALL, "Cannot parse logline" + logline);
+			throw new RuntimeException("Error parsing logline");
+		}
+
+		return new ApacheAccessLog(m.group(1), m.group(2), m.group(3), m.group(4), m.group(5), m.group(6), m.group(7), m.group(8), m.group(9));
+	}
 }
