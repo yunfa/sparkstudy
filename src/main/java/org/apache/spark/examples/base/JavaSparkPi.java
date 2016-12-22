@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.spark.examples;
+package org.apache.spark.examples.base;
 
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;

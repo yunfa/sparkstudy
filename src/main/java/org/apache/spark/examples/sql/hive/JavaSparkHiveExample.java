@@ -21,6 +21,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.function.MapFunction;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Encoders;
@@ -59,22 +60,23 @@ public class JavaSparkHiveExample {
 		// $example on:spark_hive$
 		// warehouseLocation points to the default location for managed
 		// databases and tables
-		String warehouseLocation = "file:" + System.getProperty("user.dir") + "spark-warehouse";
-		SparkSession spark = SparkSession.builder().appName("Java Spark Hive Example").config("spark.sql.warehouse.dir", warehouseLocation)
-				.enableHiveSupport().getOrCreate();
+		String warehouseLocation = System.getProperty("user.dir") + "src\\main\\resources\\spark-warehouse";
+		System.out.println("warehouseLocation:" + warehouseLocation);
+		SparkConf conf = new SparkConf().setMaster("local");
+		SparkSession spark = SparkSession.builder().config(conf).appName("Java Spark Hive Example")
+				.config("spark.sql.warehouse.dir", warehouseLocation).enableHiveSupport().getOrCreate();
 
-		spark.sql("CREATE TABLE IF NOT EXISTS src (key INT, value STRING)");
+		// spark.sql("CREATE TABLE IF NOT EXISTS SRC(key INT, value STRING)");
 		spark.sql("LOAD DATA LOCAL INPATH 'src/main/resources/kv1.txt' INTO TABLE src");
 
 		// Queries are expressed in HiveQL
-		spark.sql("SELECT * FROM src").show();
+		spark.sql("SELECT * FROM SRC").show();
 		// +---+-------+
 		// |key| value|
 		// +---+-------+
 		// |238|val_238|
 		// | 86| val_86|
 		// |311|val_311|
-		// ...
 
 		// Aggregation queries are also supported.
 		spark.sql("SELECT COUNT(*) FROM src").show();

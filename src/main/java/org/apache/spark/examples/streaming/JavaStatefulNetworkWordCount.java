@@ -42,7 +42,7 @@ import org.apache.spark.streaming.api.java.*;
  * <p>
  * To run this on your local machine, you need to first run a Netcat server `$
  * nc -lk 9999` and then run the example `$ bin/run-example
- * org.apache.spark.examples.streaming.JavaStatefulNetworkWordCount localhost
+ * JavaStatefulNetworkWordCount localhost
  * 9999`
  */
 public class JavaStatefulNetworkWordCount {

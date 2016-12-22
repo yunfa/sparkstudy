@@ -47,7 +47,7 @@ import org.apache.spark.streaming.kafka.KafkaUtils;
  * should use
  *
  * To run this example: `$ bin/run-example
- * org.apache.spark.examples.streaming.JavaKafkaWordCount zoo01,zoo02, \ zoo03
+ * JavaKafkaWordCount zoo01,zoo02, \ zoo03
  * my-consumer-group topic1,topic2 1`
  */
 

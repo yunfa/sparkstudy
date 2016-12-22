@@ -102,7 +102,7 @@ class JavaDroppedWordsCounter {
  * and run the example as
  *
  * `$ ./bin/run-example
- * org.apache.spark.examples.streaming.JavaRecoverableNetworkWordCount \
+ * JavaRecoverableNetworkWordCount \
  * localhost 9999 ~/checkpoint/ ~/out`
  *
  * If the directory ~/checkpoint/ does not exist (e.g. running for the first

@@ -18,3 +18,5 @@ node_modules/
 *.iml
 .idea
 
+**/metastore_db/
+*.log

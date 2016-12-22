@@ -53,7 +53,7 @@ import java.util.regex.Pattern;
  *
  * To run this on your local machine, you need to first run a Netcat server `$
  * nc -lk 9999` and then run the example `$ bin/run-example
- * org.apache.spark.examples.streaming.JavaCustomReceiver localhost 9999`
+ * JavaCustomReceiver localhost 9999`
  */
 
 public class JavaCustomReceiver extends Receiver<String> {

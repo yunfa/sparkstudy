@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.spark.examples;
+package org.apache.spark.examples.base;
 
 import com.google.common.collect.Lists;
 import scala.Tuple2;
