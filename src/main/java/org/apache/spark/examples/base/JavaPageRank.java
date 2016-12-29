@@ -35,20 +35,19 @@ import org.apache.spark.api.java.function.PairFunction;
 import org.apache.spark.sql.SparkSession;
 
 /**
- * Computes the PageRank of URLs from an input file. Input file should be in
- * format of: URL neighbor URL URL neighbor URL URL neighbor URL ... where URL
- * and their neighbors are separated by space(s).
+ * Computes the PageRank of URLs from an input file. Input file should be in format of: URL neighbor URL URL neighbor
+ * URL URL neighbor URL ... where URL and their neighbors are separated by space(s).
  *
- * This is an example implementation for learning how to use Spark. For more
- * conventional use, please refer to org.apache.spark.graphx.lib.PageRank
+ * This is an example implementation for learning how to use Spark. For more conventional use, please refer to
+ * org.apache.spark.graphx.lib.PageRank
  */
 public final class JavaPageRank {
 
 	private static final Pattern SPACES = Pattern.compile("\\s+");
 
 	static void showWarning() {
-		String warning = "WARN: This is a naive implementation of PageRank " + "and is given as an example! \n"
-				+ "Please use the PageRank implementation found in " + "org.apache.spark.graphx.lib.PageRank for more conventional use.";
+		String warning = "WARN: This is a naive implementation of PageRank and is given as an example! \n"
+				+ "Please use the PageRank implementation found in org.apache.spark.graphx.lib.PageRank for more conventional use.";
 		System.err.println(warning);
 	}
 
@@ -68,7 +67,7 @@ public final class JavaPageRank {
 
 		showWarning();
 
-		SparkSession spark = SparkSession.builder().appName("JavaPageRank").getOrCreate();
+		SparkSession spark = SparkSession.builder().master("local").appName("JavaPageRank").getOrCreate();
 
 		// Loads in input file. It should be in format of:
 		// URL neighbor URL
@@ -87,8 +86,7 @@ public final class JavaPageRank {
 			}
 		}).distinct().groupByKey().cache();
 
-		// Loads all URLs with other URL(s) link to from input file and
-		// initialize ranks of them to one.
+		// Loads all URLs with other URL(s) link to from input file and initialize ranks of them to one.
 		JavaPairRDD<String, Double> ranks = links.mapValues(new Function<Iterable<String>, Double>() {
 
 			@Override
@@ -97,8 +95,7 @@ public final class JavaPageRank {
 			}
 		});
 
-		// Calculates and updates URL ranks continuously using PageRank
-		// algorithm.
+		// Calculates and updates URL ranks continuously using PageRank algorithm.
 		for (int current = 0; current < Integer.parseInt(args[1]); current++) {
 			// Calculates URL contributions to the rank of other URLs.
 			JavaPairRDD<String, Double> contribs = links.join(ranks).values()

@@ -41,7 +41,7 @@ import java.util.regex.Pattern;
 public final class JavaLogQuery {
 
 	public static final List<String> exampleApacheLogs = Lists.newArrayList(
-			"10.10.10.10 - \"FRED\" [18/Jan/2013:17:56:07 +1100] \"GET http://images.com/2013/Generic.jpg "
+			"10.0.40.10 - \"FRED\" [18/Jan/2013:17:56:07 +1100] \"GET http://images.com/2013/Generic.jpg "
 					+ "HTTP/1.1\" 304 315 \"http://referall.com/\" \"Mozilla/4.0 (compatible; MSIE 7.0; "
 					+ "Windows NT 5.1; GTB7.4; .NET CLR 2.0.50727; .NET CLR 3.0.04506.30; .NET CLR 3.0.04506.648; "
 					+ ".NET CLR 3.5.21022; .NET CLR 3.0.4506.2152; .NET CLR 1.0.3705; .NET CLR 1.1.4322; .NET CLR "
@@ -105,10 +105,8 @@ public final class JavaLogQuery {
 	}
 
 	public static void main(String[] args) {
-		SparkSession spark = SparkSession.builder().appName("JavaLogQuery").getOrCreate();
-
+		SparkSession spark = SparkSession.builder().master("local").appName("JavaLogQuery").getOrCreate();
 		JavaSparkContext jsc = new JavaSparkContext(spark.sparkContext());
-
 		JavaRDD<String> dataSet = (args.length == 1) ? jsc.textFile(args[0]) : jsc.parallelize(exampleApacheLogs);
 
 		JavaPairRDD<Tuple3<String, String, String>, Stats> extracted = dataSet
@@ -129,8 +127,9 @@ public final class JavaLogQuery {
 		});
 
 		List<Tuple2<Tuple3<String, String, String>, Stats>> output = counts.collect();
+		System.out.println("most ip list -------------------");
 		for (Tuple2<?, ?> t : output) {
-			System.out.println(t._1() + "\t" + t._2());
+			System.out.println(t._1() + "\t大小次数：" + t._2());
 		}
 		spark.stop();
 	}

@@ -39,7 +39,6 @@ public class JavaSVMWithSGDExample {
   public static void main(String[] args) {
     SparkConf conf = new SparkConf().setAppName("JavaSVMWithSGDExample");
     SparkContext sc = new SparkContext(conf);
-    // $example on$
     String path = "data/mllib/sample_libsvm_data.txt";
     JavaRDD<LabeledPoint> data = MLUtils.loadLibSVMFile(sc, path).toJavaRDD();
 
@@ -75,7 +74,6 @@ public class JavaSVMWithSGDExample {
     // Save and load model
     model.save(sc, "target/tmp/javaSVMWithSGDModel");
     SVMModel sameModel = SVMModel.load(sc, "target/tmp/javaSVMWithSGDModel");
-    // $example off$
 
     sc.stop();
   }

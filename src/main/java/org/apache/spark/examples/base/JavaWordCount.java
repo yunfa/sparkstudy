@@ -36,15 +36,9 @@ public final class JavaWordCount {
 	private static final Pattern SPACE = Pattern.compile(" ");
 
 	public static void main(String[] args) throws Exception {
+		SparkSession spark = SparkSession.builder().master("local").appName("JavaWordCount").getOrCreate();
 
-		if (args.length < 1) {
-			System.err.println("Usage: JavaWordCount <file>");
-			System.exit(1);
-		}
-
-		SparkSession spark = SparkSession.builder().appName("JavaWordCount").getOrCreate();
-
-		JavaRDD<String> lines = spark.read().textFile(args[0]).javaRDD();
+		JavaRDD<String> lines = spark.read().textFile("src/main/resources/log.txt").javaRDD();
 
 		JavaRDD<String> words = lines.flatMap(new FlatMapFunction<String, String>() {
 
@@ -62,6 +56,7 @@ public final class JavaWordCount {
 			}
 		});
 
+		// 计算字符数量
 		JavaPairRDD<String, Integer> counts = ones.reduceByKey(new Function2<Integer, Integer, Integer>() {
 
 			@Override
@@ -69,11 +64,26 @@ public final class JavaWordCount {
 				return i1 + i2;
 			}
 		});
-
-		List<Tuple2<String, Integer>> output = counts.collect();
+		JavaPairRDD<String, Integer> sortCounts = counts.sortByKey();
+		List<Tuple2<String, Integer>> output = sortCounts.collect();
 		for (Tuple2<?, ?> tuple : output) {
 			System.out.println(tuple._1() + ": " + tuple._2());
 		}
+
+		// 按value排序，将key跟value反转，再sortByKey
+		JavaPairRDD<Integer, String> reverse = counts.mapToPair(new PairFunction<Tuple2<String, Integer>, Integer, String>() {
+
+			@Override
+			public Tuple2<Integer, String> call(Tuple2<String, Integer> stringIntegerTuple2) throws Exception {
+				return new Tuple2<Integer, String>(stringIntegerTuple2._2(), stringIntegerTuple2._1());
+			}
+		}).sortByKey(false);
+		List<Tuple2<Integer, String>> outputReverse = reverse.collect();
+		System.out.println("reverse sort-----------------");
+		for (Tuple2<?, ?> tuple : outputReverse) {
+			System.out.println(tuple._2() + ": " + tuple._1());
+		}
+
 		spark.stop();
 	}
 }
