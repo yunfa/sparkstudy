@@ -37,7 +37,7 @@ import org.apache.spark.sql.SparkSession;
 /**
  * Computes the PageRank of URLs from an input file. Input file should be in format of: URL neighbor URL URL neighbor
  * URL URL neighbor URL ... where URL and their neighbors are separated by space(s).
- *
+ * <p>
  * This is an example implementation for learning how to use Spark. For more conventional use, please refer to
  * org.apache.spark.graphx.lib.PageRank
  */
@@ -60,10 +60,8 @@ public final class JavaPageRank {
 	}
 
 	public static void main(String[] args) throws Exception {
-		if (args.length < 2) {
-			System.err.println("Usage: JavaPageRank <file> <number_of_iterations>");
-			System.exit(1);
-		}
+		String pageRankFileName = "src/main/resources/url.log";
+		int numberOfIteration = 1;
 
 		showWarning();
 
@@ -73,8 +71,7 @@ public final class JavaPageRank {
 		// URL neighbor URL
 		// URL neighbor URL
 		// URL neighbor URL
-		// ...
-		JavaRDD<String> lines = spark.read().textFile(args[0]).javaRDD();
+		JavaRDD<String> lines = spark.read().textFile(pageRankFileName).javaRDD();
 
 		// Loads all URLs from input file and initialize their neighbors.
 		JavaPairRDD<String, Iterable<String>> links = lines.mapToPair(new PairFunction<String, String, String>() {
@@ -85,6 +82,15 @@ public final class JavaPageRank {
 				return new Tuple2<>(parts[0], parts[1]);
 			}
 		}).distinct().groupByKey().cache();
+		System.out.println("\nmapToPair distinct groupByKey:");
+		System.out.println(links.collect());
+
+        links.flatMapToPair(new PairFlatMapFunction<Tuple2<String,Iterable<String>>, String, Double>() {
+            @Override
+            public Iterator<Tuple2<String, Double>> call(Tuple2<String, Iterable<String>> stringIterableTuple2) throws Exception {
+                return null;
+            }
+        });
 
 		// Loads all URLs with other URL(s) link to from input file and initialize ranks of them to one.
 		JavaPairRDD<String, Double> ranks = links.mapValues(new Function<Iterable<String>, Double>() {
@@ -94,10 +100,16 @@ public final class JavaPageRank {
 				return 1.0;
 			}
 		});
+		System.out.println("\nmapValues value 1.0 :");
+		System.out.println(ranks.collect());
 
 		// Calculates and updates URL ranks continuously using PageRank algorithm.
-		for (int current = 0; current < Integer.parseInt(args[1]); current++) {
+		for (int current = 0; current < numberOfIteration; current++) {
 			// Calculates URL contributions to the rank of other URLs.
+			System.out.println("\nlinks join ranks:");
+			System.out.println(links.join(ranks).collect());
+			System.out.println("\nlinks join ranks values:");
+			System.out.println(links.join(ranks).values().collect());
 			JavaPairRDD<String, Double> contribs = links.join(ranks).values()
 					.flatMapToPair(new PairFlatMapFunction<Tuple2<Iterable<String>, Double>, String, Double>() {
 
@@ -111,8 +123,12 @@ public final class JavaPageRank {
 							return results.iterator();
 						}
 					});
-
+			System.out.println("\ncontribs:");
+			System.out.println(contribs.collect());
 			// Re-calculates URL ranks based on neighbor contributions.
+			System.out.println("\nreduce By Key sum:");
+			System.out.println(contribs.reduceByKey(new Sum()).collect());
+
 			ranks = contribs.reduceByKey(new Sum()).mapValues(new Function<Double, Double>() {
 
 				@Override
@@ -120,12 +136,14 @@ public final class JavaPageRank {
 					return 0.15 + sum * 0.85;
 				}
 			});
+			System.out.println("\nranks reduceByKey:");
+			System.out.println(ranks.collect());
 		}
 
 		// Collects all URL ranks and dump them to console.
 		List<Tuple2<String, Double>> output = ranks.collect();
 		for (Tuple2<?, ?> tuple : output) {
-			System.out.println(tuple._1() + " has rank: " + tuple._2() + ".");
+			// System.out.println(tuple._1() + " has rank: " + tuple._2() + ".");
 		}
 
 		spark.stop();
