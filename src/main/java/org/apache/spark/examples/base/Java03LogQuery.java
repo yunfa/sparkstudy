@@ -36,9 +36,9 @@ import java.util.regex.Pattern;
 /**
  * Executes a roll up-style query against Apache logs.
  *
- * Usage: JavaLogQuery [logFile]
+ * Usage: Java03LogQuery [logFile]
  */
-public final class JavaLogQuery {
+public final class Java03LogQuery {
 
 	public static final List<String> exampleApacheLogs = Lists.newArrayList(
 			"10.0.40.10 - \"FRED\" [18/Jan/2013:17:56:07 +1100] \"GET http://images.com/2013/Generic.jpg "
@@ -105,7 +105,7 @@ public final class JavaLogQuery {
 	}
 
 	public static void main(String[] args) {
-		SparkSession spark = SparkSession.builder().master("local").appName("JavaLogQuery").getOrCreate();
+		SparkSession spark = SparkSession.builder().master("local").appName("Java03LogQuery").getOrCreate();
 		JavaSparkContext jsc = new JavaSparkContext(spark.sparkContext());
 		JavaRDD<String> dataSet = (args.length == 1) ? jsc.textFile(args[0]) : jsc.parallelize(exampleApacheLogs);
 

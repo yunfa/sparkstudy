@@ -31,12 +31,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Pattern;
 
-public final class JavaWordCount {
+public final class Java01WordCount {
 
 	private static final Pattern SPACE = Pattern.compile(" ");
 
 	public static void main(String[] args) throws Exception {
-		SparkSession spark = SparkSession.builder().master("local").appName("JavaWordCount").getOrCreate();
+		SparkSession spark = SparkSession.builder().master("local").appName("Java01WordCount").getOrCreate();
 
 		JavaRDD<String> lines = spark.read().textFile("src/main/resources/log.txt").javaRDD();
 

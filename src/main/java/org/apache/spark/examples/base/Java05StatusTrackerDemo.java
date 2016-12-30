@@ -31,7 +31,7 @@ import java.util.List;
 /**
  * Example of using Spark's status APIs from Java.
  */
-public final class JavaStatusTrackerDemo {
+public final class Java05StatusTrackerDemo {
 
 	public static final String APP_NAME = "JavaStatusAPIDemo";
 
@@ -45,7 +45,7 @@ public final class JavaStatusTrackerDemo {
 	}
 
 	public static void main(String[] args) throws Exception {
-		SparkSession spark = SparkSession.builder().appName(APP_NAME).getOrCreate();
+		SparkSession spark = SparkSession.builder().master("local").appName(APP_NAME).getOrCreate();
 
 		final JavaSparkContext jsc = new JavaSparkContext(spark.sparkContext());
 
@@ -55,7 +55,9 @@ public final class JavaStatusTrackerDemo {
 		while (!jobFuture.isDone()) {
 			Thread.sleep(1000); // 1 second
 			List<Integer> jobIds = jobFuture.jobIds();
+			System.out.println("jobIds size:" + jobIds.size());
 			if (jobIds.isEmpty()) {
+				System.out.print("wait continue....");
 				continue;
 			}
 			int currentJobId = jobIds.get(jobIds.size() - 1);

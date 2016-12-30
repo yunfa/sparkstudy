@@ -31,9 +31,9 @@ import org.apache.spark.api.java.function.PairFunction;
 import org.apache.spark.sql.SparkSession;
 
 /**
- * Transitive closure on a graph, implemented in Java. Usage: JavaTC [slices]
+ * Transitive closure on a graph, implemented in Java. Usage: Java06TC [slices]
  */
-public final class JavaTC {
+public final class Java06TC {
 
 	private static final int numEdges = 200;
 
@@ -65,7 +65,7 @@ public final class JavaTC {
 	}
 
 	public static void main(String[] args) {
-		SparkSession spark = SparkSession.builder().appName("JavaTC").getOrCreate();
+		SparkSession spark = SparkSession.builder().appName("Java06TC").getOrCreate();
 
 		JavaSparkContext jsc = new JavaSparkContext(spark.sparkContext());
 
@@ -76,7 +76,6 @@ public final class JavaTC {
 		// by joining the graph's edges with the already-discovered paths.
 		// e.g. join the path (y, z) from the TC with the edge (x, y) from
 		// the graph to obtain the path (x, z).
-
 		// Because join() joins on keys, the edges are stored in reversed order.
 		JavaPairRDD<Integer, Integer> edges = tc.mapToPair(new PairFunction<Tuple2<Integer, Integer>, Integer, Integer>() {
 

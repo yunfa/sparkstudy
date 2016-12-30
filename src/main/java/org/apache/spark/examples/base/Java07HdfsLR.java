@@ -34,7 +34,7 @@ import java.util.regex.Pattern;
  * conventional use, please refer to
  * org.apache.spark.ml.classification.LogisticRegression.
  */
-public final class JavaHdfsLR {
+public final class Java07HdfsLR {
 
 	private static final int D = 10; // Number of dimensions
 
@@ -128,13 +128,13 @@ public final class JavaHdfsLR {
 	public static void main(String[] args) {
 
 		if (args.length < 2) {
-			System.err.println("Usage: JavaHdfsLR <file> <iters>");
+			System.err.println("Usage: Java07HdfsLR <file> <iters>");
 			System.exit(1);
 		}
 
 		showWarning();
 
-		SparkSession spark = SparkSession.builder().appName("JavaHdfsLR").getOrCreate();
+		SparkSession spark = SparkSession.builder().appName("Java07HdfsLR").getOrCreate();
 
 		JavaRDD<String> lines = spark.read().textFile(args[0]).javaRDD();
 		JavaRDD<DataPoint> points = lines.map(new ParsePoint()).cache();

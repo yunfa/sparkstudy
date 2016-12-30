@@ -41,7 +41,7 @@ import org.apache.spark.sql.SparkSession;
  * This is an example implementation for learning how to use Spark. For more conventional use, please refer to
  * org.apache.spark.graphx.lib.PageRank
  */
-public final class JavaPageRank {
+public final class Java04PageRank {
 
 	private static final Pattern SPACES = Pattern.compile("\\s+");
 
@@ -65,7 +65,7 @@ public final class JavaPageRank {
 
 		showWarning();
 
-		SparkSession spark = SparkSession.builder().master("local").appName("JavaPageRank").getOrCreate();
+		SparkSession spark = SparkSession.builder().master("local").appName("Java04PageRank").getOrCreate();
 
 		// Loads in input file. It should be in format of:
 		// URL neighbor URL

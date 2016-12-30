@@ -27,16 +27,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Computes an approximation to pi Usage: JavaSparkPi [slices]
+ * Computes an approximation to pi Usage: Java02SparkPi [slices]
  */
-public final class JavaSparkPi {
+public final class Java02SparkPi {
 
 	public static void main(String[] args) throws Exception {
-		SparkSession spark = SparkSession.builder().appName("JavaSparkPi").getOrCreate();
-
+		SparkSession spark = SparkSession.builder().master("local").appName("Java02SparkPi").getOrCreate();
 		JavaSparkContext jsc = new JavaSparkContext(spark.sparkContext());
 
-		int slices = (args.length == 1) ? Integer.parseInt(args[0]) : 2;
+		int slices = 2;
 		int n = 100000 * slices;
 		List<Integer> l = new ArrayList<>(n);
 		for (int i = 0; i < n; i++) {
@@ -50,7 +49,7 @@ public final class JavaSparkPi {
 			private static final long serialVersionUID = 1L;
 
 			@Override
-			public Integer call(Integer integer) {
+			public Integer call(Integer intVal) {
 				double x = Math.random() * 2 - 1;
 				double y = Math.random() * 2 - 1;
 				return (x * x + y * y < 1) ? 1 : 0;
@@ -60,12 +59,12 @@ public final class JavaSparkPi {
 			private static final long serialVersionUID = 1L;
 
 			@Override
-			public Integer call(Integer integer, Integer integer2) {
-				return integer + integer2;
+			public Integer call(Integer i1, Integer i2) {
+				return i1 + i2;
 			}
 		});
 
-		System.out.println("Pi is roughly " + 4.0 * count / n);
+		System.out.println("\nPi is roughly " + 4.0 * count / n);
 
 		jsc.close();
 		spark.stop();
